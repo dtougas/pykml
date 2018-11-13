@@ -5,7 +5,7 @@ from a file or remote URL.
 '''
 import sys
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from lxml import etree, objectify
 
 OGCKML_SCHEMA = 'http://schemas.opengis.net/kml/2.2.0/ogckml22.xsd'
@@ -21,7 +21,7 @@ class Schema():
                 self.schema = etree.XMLSchema(file=f)
         except:
             # try to open a remote URL
-            f = urllib2.urlopen(schema)
+            f = urllib.request.urlopen(schema)
             self.schema = etree.XMLSchema(file=f)
     
     def validate(self, doc):
@@ -91,7 +91,7 @@ def validate_kml():
         fileobject = open(uri)
     except IOError:
         try:
-            fileobject = urllib2.urlopen(uri)
+            fileobject = urllib.request.urlopen(uri)
         except ValueError:
             raise ValueError('Unable to load URI {0}'.format(uri))
     except:

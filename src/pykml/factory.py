@@ -45,7 +45,7 @@ def get_factory_object_name(namespace):
         'http://www.google.com/kml/ext/2.2': 'GX'
     }
     if namespace:
-        if factory_map.has_key(namespace):
+        if namespace in factory_map:
             factory_object_name = factory_map[namespace]
         else:
             factory_object_name = None
@@ -56,10 +56,10 @@ def get_factory_object_name(namespace):
 
 def write_python_script_for_kml_document(doc):
     "Generates a python script that will construct a given KML document"
-    import StringIO
+    import io
     from pykml.helpers import separate_namespace
     
-    output = StringIO.StringIO()
+    output = io.StringIO()
     indent_size = 2
     
     # add the etree package so that comments can be handled
@@ -72,7 +72,7 @@ def write_python_script_for_kml_document(doc):
     output.write('\n')
     
     level = 0
-    xml = StringIO.StringIO(etree.tostring(doc))
+    xml = io.StringIO(etree.tostring(doc))
     context = etree.iterparse(xml, events=("start", "end", "comment"))
     output.write('doc = ')
     last_action = None
@@ -157,7 +157,7 @@ def write_python_script_for_kml_document(doc):
                     indent = ''
                 else:
                     indent = ' ' * level * indent_size
-                for att,val in elem.items():
+                for att,val in list(elem.items()):
                     output.write('{0}  {1}="{2}",\n'.format(indent,att,val))
                 output.write('{0}),\n'.format(indent))
         last_action = action
@@ -185,7 +185,7 @@ def write_python_script_for_kml_document(doc):
 
 def kml2pykml():
     "Parse a KML file and generates a pyKML script"
-    import urllib2
+    import urllib.request, urllib.error, urllib.parse
     from pykml.parser import parse
     from optparse import OptionParser
     
@@ -203,7 +203,7 @@ def kml2pykml():
             doc = parse(f, schema=None)
     except IOError:
         try:
-            f = urllib2.urlopen(uri)
+            f = urllib.request.urlopen(uri)
             doc = parse(f, schema=None)
         finally:
             #pass
@@ -213,4 +213,4 @@ def kml2pykml():
                 pass #variable was not defined
             else:
                 f.close
-    print write_python_script_for_kml_document(doc)
+    print(write_python_script_for_kml_document(doc))
